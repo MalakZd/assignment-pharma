@@ -4,6 +4,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from functools import lru_cache
+
 load_dotenv()
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -17,7 +19,8 @@ CHAT_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6-terra")
 EMBED_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 
 
+@lru_cache(maxsize=1)
 def get_client() -> OpenAI:
     if not API_KEY:
         raise RuntimeError("OPENAI_API_KEY is not set. Provide it via .env or --env-file.")
-    return OpenAI(api_key=API_KEY, base_url=BASE_URL)
+    return OpenAI(api_key=API_KEY, base_url=BASE_URL, max_retries=5, timeout=90.0)
