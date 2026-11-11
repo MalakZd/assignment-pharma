@@ -54,7 +54,7 @@ def chunk_file(path: Path) -> list[Chunk]:
     def flush():
         body = "\n".join(buf).strip()
         if body:
-            title = " > ".join(t for _, t in stack) or path.stem
+            title = " > ".join(t for lvl, t in stack if lvl > 1) or "Overview"
             sections.append((title, body))
         buf.clear()
 

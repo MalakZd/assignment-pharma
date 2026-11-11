@@ -1,18 +1,23 @@
 import sys
 
-from app.agent import run_agent
+from app.pipeline import answer_question
 from app.retriever import Retriever
 
-DISCLAIMER = "Not medical advice. Technical exercise based on a limited corpus."
-
 q = " ".join(sys.argv[1:]) or "What are the main contraindications for warfarin?"
-res = run_agent(q, Retriever())
+r = answer_question(q, Retriever())
 
-print("PLAN:", *res.plan.sub_questions, sep="\n  - ")
-print("MISSING DRUGS:", res.missing_drugs or "none")
+print("PLAN:", *r.plan, sep="\n  - ")
+print("MISSING DRUGS:", r.missing_drugs or "none")
 print("TOOL CALLS:")
-for c in res.tool_calls:
+for c in r.tool_calls:
     print(f"  - {c.tool}({c.args}) -> {c.n_results} passages")
-print("\nANSWER:\n" + res.draft.answer)
-print("\nCITATIONS:", [f"{c.file} › {c.section}" for c in res.draft.citations])
-print("\n" + DISCLAIMER)
+print("\nANSWER:\n" + r.answer)
+print("\nCITATIONS:")
+for c in r.citations:
+    print(f"  - {c.file} › {c.section}")
+print(f"\nCRITIC: {r.critic.verdict} (revised={r.critic.revised})")
+for c in r.critic.claims:
+    print(f"  - [{c.status}] {c.claim[:90]}")
+for n in r.critic.numeric_issues:
+    print(f"  - [numeric] {n}")
+print("\n" + r.disclaimer)
