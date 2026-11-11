@@ -1,0 +1,8 @@
+.env
+assignment-pharma.pdf
+.venv/
+__pycache__/
+*.pyc
+.cache/
+.pytest_cache/
+.DS_Store
