@@ -1,3 +1,5 @@
+import importlib
+
 from app.config import _env
 from app.critic import numeric_issues
 from app.ingest import Chunk, load_corpus
@@ -28,6 +30,7 @@ def test_citations_resolve_and_unknown_ids_are_dropped():
 
 
 def test_numeric_check_flags_invented_numbers():
+
     ev = [_chunk()]
     assert numeric_issues("Contraindicated below 30 [E1]", ev, "") == []
     assert numeric_issues("Contraindicated below 45 [E1]", ev, "")
@@ -36,3 +39,16 @@ def test_numeric_check_flags_invented_numbers():
 def test_env_strips_quotes(monkeypatch):
     monkeypatch.setenv("X_TEST", "'https://example.com'")
     assert _env("X_TEST") == "https://example.com"
+
+
+def test_base_url_read_from_provided_spelling(monkeypatch):
+    """The provided .env spells the variable OPENAI_BASE_UR; it must be read as-is."""
+    from app import config
+    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
+    monkeypatch.setenv("OPENAI_BASE_UR", "'https://proxy.example.com'")
+    try:
+        importlib.reload(config)
+        assert config.BASE_URL == "https://proxy.example.com"
+    finally:
+        monkeypatch.undo()
+        importlib.reload(config)  

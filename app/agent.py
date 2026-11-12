@@ -33,6 +33,7 @@ DRAFT_SYSTEM = (
 
     "Write a concise answer using ONLY the evidence passages provided. Each passage is labeled "
     "[E1], [E2], ... Rules:\n"
+    "- Write plain text only: no markdown, no asterisks, no headings. Use short paragraphs.\n"
     "- Every factual sentence ends with one or more evidence IDs like [E2]. Use only given IDs.\n"
     "- Copy numbers, thresholds and units exactly as written in the evidence.\n"
     "- If something was not found in the evidence, say so; never fill gaps from memory.\n"

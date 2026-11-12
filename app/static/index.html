@@ -234,8 +234,14 @@ function stopProgress() {
 
 function addCited(parent, text) {
   text.split(/(\[[^\]]+›[^\]]+\])/).forEach(part => {
-    if (/^\[[^\]]+›[^\]]+\]$/.test(part)) parent.appendChild(el("span", "cite", part.slice(1, -1)));
-    else if (part) parent.appendChild(document.createTextNode(part));
+    if (/^\[[^\]]+›[^\]]+\]$/.test(part)) {
+      parent.appendChild(el("span", "cite", part.slice(1, -1)));
+    } else if (part) {
+      part.split(/(\*\*[^*]+\*\*)/).forEach(seg => {
+        if (/^\*\*[^*]+\*\*$/.test(seg)) parent.appendChild(el("strong", "", seg.slice(2, -2)));
+        else if (seg) parent.appendChild(document.createTextNode(seg));
+      });
+    }
   });
 }
 function kindOf(file) {

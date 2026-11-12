@@ -26,8 +26,8 @@ def _env(name: str, default: str | None = None) -> str | None:
 
 
 API_KEY = _env("OPENAI_API_KEY")
-# Accept the typo'd name too, in case a grader's .env has it.
-BASE_URL = _env("OPENAI_BASE_URL") or _env("OPENAI_BASE_UR")
+
+BASE_URL = _env("OPENAI_BASE_UR") or _env("OPENAI_BASE_URL")
 CHAT_MODEL = _env("OPENAI_MODEL", "gpt-5.6-terra")
 EMBED_MODEL = _env("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 
