@@ -5,144 +5,332 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pharma Research Agent</title>
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --ink:#1c2430; --muted:#667085; --line:#e4e7ec;
-          --accent:#2457d6; --ok:#12805c; --warn:#b54708; --bad:#b42318; }
-  * { box-sizing: border-box; }
+  :root {
+    --bg:#f5f6fa; --card:#ffffff; --ink:#172033; --muted:#64708a; --line:#e3e7ef;
+    --accent:#3b5bdb; --accent-soft:#edf1ff; --accent-ink:#2c46b0;
+    --ok:#0f8a5f; --ok-soft:#e6f6ef; --warn:#b45309; --warn-soft:#fff4e0;
+    --bad:#b42318; --bad-soft:#fdecea; --shadow:0 1px 2px rgba(20,30,60,.05),0 8px 24px rgba(20,30,60,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0e1320; --card:#161d2e; --ink:#e8ecf6; --muted:#93a0bb; --line:#26304a;
+      --accent:#7c93ff; --accent-soft:#1e2745; --accent-ink:#b4c2ff;
+      --ok:#3ccf9a; --ok-soft:#10291f; --warn:#f5a94a; --warn-soft:#2d2210;
+      --bad:#ff7b72; --bad-soft:#2f1613; --shadow:none;
+    }
+  }
+  * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--ink);
-         font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-  main { max-width:820px; margin:0 auto; padding:28px 18px 60px; }
-  h1 { margin:0 0 4px; font-size:1.5rem; }
-  .sub { color:var(--muted); margin:0 0 16px; }
-  .banner { background:#fff7e6; border:1px solid #f5d79a; color:#7a4b00;
-            padding:9px 12px; border-radius:8px; font-size:.9rem; margin-bottom:18px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
-          padding:16px; margin-bottom:16px; }
-  textarea { width:100%; min-height:84px; resize:vertical; padding:10px;
-             border:1px solid var(--line); border-radius:8px; font:inherit; }
+         font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width:860px; margin:0 auto; padding:0 18px 70px; }
+
+  /* header */
+  header { display:flex; align-items:center; justify-content:space-between;
+           padding:22px 0 10px; gap:12px; flex-wrap:wrap; }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .logo { width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
+          background:linear-gradient(135deg,#3b5bdb,#7048e8); color:#fff; }
+
+  .brand h1 { font-size:1.15rem; margin:0; line-height:1.2; }
+  .brand small { color:var(--muted); font-size:.82rem; }
+  .pill { font-size:.78rem; font-weight:600; color:var(--warn); background:var(--warn-soft);
+          padding:5px 12px; border-radius:999px; }
+
+  .hero { margin:22px 0 18px; }
+  .hero h2 { font-size:1.7rem; line-height:1.25; margin:0 0 6px; letter-spacing:-.01em; }
+  .hero p { margin:0; color:var(--muted); }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px;
+          box-shadow:var(--shadow); }
+  .ask { padding:16px; }
+  textarea { width:100%; min-height:88px; resize:vertical; padding:12px 14px; color:var(--ink);
+             background:transparent; border:1px solid var(--line); border-radius:12px; font:inherit; }
   textarea:focus { outline:2px solid var(--accent); border-color:transparent; }
-  .row { display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
-  button.primary { background:var(--accent); color:#fff; border:0; padding:9px 20px;
-                   border-radius:8px; font:inherit; font-weight:600; cursor:pointer; }
-  button.primary:disabled { opacity:.55; cursor:wait; }
-  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-  .chip { background:#eef2ff; color:#27408b; border:1px solid #d6defa; border-radius:999px;
-          padding:5px 12px; font-size:.85rem; cursor:pointer; text-align:left; }
-  .chip:hover { background:#e0e7ff; }
-  #status { color:var(--muted); font-size:.9rem; }
-  #answer { white-space:pre-wrap; }
-  .cite { display:inline-block; background:#eef2ff; color:#27408b; border-radius:6px;
-          padding:0 6px; font-size:.78rem; margin:0 1px; white-space:normal; }
-  .badge { display:inline-block; font-size:.75rem; font-weight:700; padding:2px 9px;
-           border-radius:999px; color:#fff; }
-  .pass { background:var(--ok); } .revised { background:var(--warn); } .flagged { background:var(--bad); }
-  h2 { font-size:1rem; margin:0 0 8px; }
-  ul { margin:6px 0 0; padding-left:20px; }
-  details { margin-top:8px; }
-  summary { cursor:pointer; font-weight:600; }
-  .claim { font-size:.88rem; margin:4px 0; }
-  .s-supported { color:var(--ok); } .s-unsupported { color:var(--bad); }
-  .s-clinically_ambiguous { color:var(--warn); }
-  code { background:#f2f4f7; padding:1px 5px; border-radius:4px; font-size:.82rem; }
-  .disclaimer { color:var(--muted); font-size:.85rem; margin-top:12px;
-                border-top:1px solid var(--line); padding-top:10px; }
-  .error { color:var(--bad); }
+  .row { display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap; }
+  .hint { color:var(--muted); font-size:.82rem; margin-left:auto; }
+  button.primary { background:var(--accent); color:#fff; border:0; padding:10px 22px; border-radius:10px;
+                   font:inherit; font-weight:600; cursor:pointer; transition:transform .05s, opacity .2s; }
+  button.primary:hover { opacity:.92; } button.primary:active { transform:scale(.98); }
+  button.primary:disabled { opacity:.5; cursor:wait; }
+  .examples { margin-top:14px; display:grid; gap:8px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
+  .ex { text-align:left; background:var(--accent-soft); color:var(--accent-ink); border:1px solid transparent;
+        border-radius:12px; padding:10px 12px; font:inherit; font-size:.86rem; cursor:pointer; line-height:1.4; }
+  .ex:hover { border-color:var(--accent); }
+  .ex b { display:block; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; opacity:.75; margin-bottom:2px; }
+
+  /* progress */
+  #progress { margin-top:18px; padding:18px; }
+  .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .step { text-align:center; color:var(--muted); font-size:.82rem; }
+  .dot { width:30px; height:30px; margin:0 auto 6px; border-radius:50%; display:grid; place-items:center;
+
+         border:2px solid var(--line); font-weight:700; font-size:.8rem; transition:all .3s; }
+  .step.active { color:var(--ink); font-weight:600; }
+  .step.active .dot { border-color:var(--accent); color:var(--accent); animation:pulse 1.4s infinite; }
+  .step.done .dot { background:var(--ok); border-color:var(--ok); color:#fff; }
+  .bar { height:4px; background:var(--line); border-radius:4px; margin-top:16px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:30%; background:var(--accent); border-radius:4px;
+           animation:slide 1.6s ease-in-out infinite; }
+  .elapsed { text-align:center; color:var(--muted); font-size:.82rem; margin-top:10px; }
+  @keyframes pulse { 50% { box-shadow:0 0 0 6px var(--accent-soft); } }
+  @keyframes slide { 0% { margin-left:-30%; } 100% { margin-left:100%; } }
+
+  /* result */
+  #result { margin-top:18px; overflow:hidden; }
+  .verdict { display:flex; align-items:center; gap:10px; padding:12px 18px; font-size:.9rem; font-weight:600; }
+  .verdict.pass { background:var(--ok-soft); color:var(--ok); }
+  .verdict.revised { background:var(--warn-soft); color:var(--warn); }
+  .verdict.flagged { background:var(--bad-soft); color:var(--bad); }
+  .verdict span { font-weight:400; color:var(--ink); opacity:.8; }
+  .body { padding:18px; }
+  .answer p { margin:0 0 12px; }
+  .cite { display:inline-block; background:var(--accent-soft); color:var(--accent-ink); border-radius:6px;
+          padding:0 7px; font-size:.74rem; margin:0 2px; vertical-align:1px; white-space:normal; }
+  .caveats { background:var(--warn-soft); border-left:4px solid var(--warn); border-radius:8px;
+             padding:10px 14px; margin-top:6px; font-size:.9rem; }
+  .caveats b { color:var(--warn); }
+  .caveats ul { margin:6px 0 0; padding-left:18px; }
+  h3 { font-size:.78rem; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); margin:20px 0 8px; }
+  .sources { display:flex; flex-wrap:wrap; gap:8px; }
+  .src { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:10px;
+         padding:6px 10px; font-size:.82rem; }
+  .tag { font-size:.68rem; font-weight:700; padding:1px 7px; border-radius:6px; background:var(--accent-soft); color:var(--accent-ink); }
+  .tools { display:flex; justify-content:flex-end; margin-bottom:8px; }
+
+  button.ghost { background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:8px;
+                 padding:4px 12px; font:inherit; font-size:.8rem; cursor:pointer; }
+  button.ghost:hover { color:var(--ink); border-color:var(--muted); }
+
+  details { border-top:1px solid var(--line); padding:12px 18px; }
+  summary { cursor:pointer; font-weight:600; font-size:.92rem; }
+  .timeline { margin:14px 0 4px 8px; border-left:2px solid var(--line); padding-left:18px; }
+  .tl { position:relative; margin-bottom:16px; }
+  .tl::before { content:""; position:absolute; left:-25px; top:6px; width:10px; height:10px; border-radius:50%;
+                background:var(--accent); }
+  .tl h4 { margin:0 0 4px; font-size:.88rem; }
+  .tl ul { margin:0; padding-left:18px; font-size:.86rem; }
+  code { background:var(--accent-soft); color:var(--accent-ink); padding:1px 6px; border-radius:5px; font-size:.78rem; word-break:break-all; }
+  .claim { font-size:.84rem; margin:3px 0; }
+  .s-supported { color:var(--ok); } .s-unsupported { color:var(--bad); } .s-clinically_ambiguous { color:var(--warn); }
+  .summary { font-size:.84rem; color:var(--muted); margin-bottom:6px; }
+
+  footer { margin-top:22px; padding:0 4px; color:var(--muted); font-size:.82rem; }
+  .err { margin-top:16px; padding:14px 16px; background:var(--bad-soft); color:var(--bad); border-radius:12px; font-size:.92rem; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { .hint { display:none; } .hero h2 { font-size:1.4rem; } }
 </style>
 </head>
 <body>
-<main>
-  <h1>Pharma Research Agent</h1>
-  <p class="sub">Ask compound questions about the FDA label and consumer-monograph corpus.</p>
-  <div class="banner">Technical exercise. Not medical advice.</div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.5 20.5a4.95 4.95 0 0 1-7-7l9-9a4.95 4.95 0 0 1 7 7z"/><path d="m8.5 8.5 7 7"/>
+        </svg>
+      </div>
 
-  <div class="card">
-    <textarea id="q" placeholder="e.g. What are the main contraindications for warfarin?"></textarea>
-    <div class="row">
-      <button class="primary" id="ask">Ask</button>
-      <span id="status"></span>
+      <div><h1>Pharma Research Agent</h1><small>Grounded answers from FDA labels and monographs</small></div>
     </div>
-    <div class="chips" id="examples"></div>
+    <span class="pill">Technical exercise · Not medical advice</span>
+  </header>
+
+  <section class="hero">
+    <h2>Ask a compound drug question.</h2>
+    <p>The agent plans, picks its own tools, checks every claim against the sources, and cites them.</p>
+  </section>
+
+  <div class="card ask">
+    <textarea id="q" placeholder="e.g. A patient on warfarin is prescribed sertraline. What is the bleeding risk?"></textarea>
+    <div class="row">
+      <button class="primary" id="ask">Ask the agent</button>
+      <span class="hint">Ctrl + Enter to send</span>
+    </div>
+    <div class="examples" id="examples"></div>
   </div>
+
+  <div class="card" id="progress" hidden>
+    <div class="steps" id="steps"></div>
+    <div class="bar"><i></i></div>
+    <div class="elapsed" id="elapsed"></div>
+  </div>
+
+  <div class="err" id="error" hidden></div>
 
   <div class="card" id="result" hidden>
-    <h2>Answer <span id="verdict" class="badge"></span></h2>
-    <div id="answer"></div>
-    <div id="sources"></div>
+    <div class="verdict" id="verdict"></div>
+    <div class="body">
+      <div class="tools"><button class="ghost" id="copy">Copy answer</button></div>
+      <div class="answer" id="answer"></div>
+
+      <div class="caveats" id="caveats" hidden></div>
+      <h3 id="srcTitle">Sources used</h3>
+      <div class="sources" id="sources"></div>
+    </div>
     <details>
-      <summary>Agent trace</summary>
-      <div id="trace"></div>
+      <summary>Agent trace: how this answer was produced</summary>
+      <div class="timeline" id="trace"></div>
     </details>
-    <div class="disclaimer" id="disclaimer"></div>
   </div>
-</main>
+
+  <footer id="disclaimer">This output is not medical advice.</footer>
+</div>
 
 <script>
 const EXAMPLES = [
-  "What are the main contraindications for warfarin?",
-  "Compare the contraindications of warfarin and apixaban. What conditions are shared and which are unique to each drug?",
-  "A patient currently on warfarin is prescribed sertraline. What is the risk of bleeding and what monitoring is recommended?",
-  "A patient with an eGFR of 25 mL/min is being considered for metformin. Is metformin contraindicated at this level of renal function, and what is the threshold?"
+  ["Single lookup", "What are the main contraindications for warfarin?"],
+  ["Comparison", "Compare the contraindications of warfarin and apixaban. What conditions are shared and which are unique to each drug?"],
+  ["Multi-hop", "A patient currently on warfarin is prescribed sertraline. What is the risk of bleeding and what monitoring is recommended?"],
+  ["Threshold", "A patient with an eGFR of 25 mL/min is being considered for metformin. Is metformin contraindicated at this level of renal function, and what is the threshold?"]
 ];
+const STEPS = ["Plan", "Retrieve", "Review", "Finalize"];
+const VERDICTS = {
+  pass: ["✓ Verified", "Every claim is supported by the retrieved sources."],
+  revised: ["↻ Revised after review", "The first draft had issues; it was rewritten and re-checked."],
+  flagged: ["⚠ Needs attention", "Some claims could not be verified. See the caveats below."]
+};
 const $ = id => document.getElementById(id);
 const el = (tag, cls, text) => {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
   if (text !== undefined) n.textContent = text;
   return n;
-};
 
-EXAMPLES.forEach(t => {
-  const c = el("button", "chip", t.length > 70 ? t.slice(0, 67) + "..." : t);
-  c.title = t;
-  c.onclick = () => { $("q").value = t; ask(); };
-  $("examples").appendChild(c);
+};
+let timers = [], clock = null, lastAnswer = "";
+
+EXAMPLES.forEach(([label, text]) => {
+  const b = el("button", "ex");
+  b.appendChild(el("b", "", label));
+  b.appendChild(document.createTextNode(text.length > 88 ? text.slice(0, 85) + "..." : text));
+  b.title = text;
+  b.onclick = () => { $("q").value = text; ask(); };
+  $("examples").appendChild(b);
 });
 
-function renderAnswer(text) {
+function setStep(n) {
+  $("steps").replaceChildren();
+  STEPS.forEach((name, i) => {
+    const s = el("div", "step" + (i < n ? " done" : i === n ? " active" : ""));
+    s.appendChild(el("div", "dot", i < n ? "✓" : String(i + 1)));
+    s.appendChild(document.createTextNode(name));
+    $("steps").appendChild(s);
+  });
+}
+function startProgress() {
+  $("progress").hidden = false;
+  setStep(0);
+  [4000, 14000, 30000].forEach((ms, i) => timers.push(setTimeout(() => setStep(i + 1), ms)));
+  const t0 = Date.now();
+  $("elapsed").textContent = "Working... 0s";
+  clock = setInterval(() => $("elapsed").textContent = "Working... " + Math.round((Date.now() - t0) / 1000) + "s", 500);
+}
+function stopProgress() {
+  timers.forEach(clearTimeout); timers = [];
+  clearInterval(clock);
+
+  $("progress").hidden = true;
+}
+
+function addCited(parent, text) {
+  text.split(/(\[[^\]]+›[^\]]+\])/).forEach(part => {
+    if (/^\[[^\]]+›[^\]]+\]$/.test(part)) parent.appendChild(el("span", "cite", part.slice(1, -1)));
+    else if (part) parent.appendChild(document.createTextNode(part));
+  });
+}
+function kindOf(file) {
+  if (file.startsWith("dailymed")) return "FDA label";
+  if (file.startsWith("medlineplus")) return "Consumer";
+  return "Glossary";
+}
+
+function render(d) {
+  const [main, ...rest] = d.answer.split(/\n\s*\nCaveats flagged by the reviewer:\n/);
+  lastAnswer = main;
   const box = $("answer");
   box.replaceChildren();
-  text.split(/(\[[^\]]+›[^\]]+\])/).forEach(part => {
-    if (/^\[[^\]]+›[^\]]+\]$/.test(part)) box.appendChild(el("span", "cite", part.slice(1, -1)));
-    else if (part) box.appendChild(document.createTextNode(part));
+  main.split(/\n{2,}/).filter(p => p.trim()).forEach(p => {
+    const para = el("p");
+    addCited(para, p.trim());
+    box.appendChild(para);
   });
+
+  const cav = $("caveats");
+  cav.replaceChildren();
+  cav.hidden = !rest.length;
+  if (rest.length) {
+    cav.appendChild(el("b", "", "Reviewer caveats"));
+    const ul = el("ul");
+
+    rest[0].split("\n").filter(l => l.trim()).forEach(l => ul.appendChild(el("li", "", l.replace(/^-\s*/, ""))));
+    cav.appendChild(ul);
+  }
+
+  const v = VERDICTS[d.critic.verdict] || VERDICTS.pass;
+  const vb = $("verdict");
+  vb.className = "verdict " + d.critic.verdict;
+  vb.replaceChildren(document.createTextNode(v[0] + "  "), el("span", "", v[1]));
+
+  const src = $("sources");
+  src.replaceChildren();
+  $("srcTitle").hidden = !d.citations.length;
+  d.citations.forEach(c => {
+    const s = el("div", "src");
+    s.appendChild(el("span", "tag", kindOf(c.file)));
+    s.appendChild(document.createTextNode(c.file.replace(".md", "") + " › " + c.section));
+    src.appendChild(s);
+  });
+
+  renderTrace(d);
+  $("disclaimer").textContent = d.disclaimer;
+  $("result").hidden = false;
+  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderTrace(d) {
   const t = $("trace");
   t.replaceChildren();
-  t.appendChild(el("p", "", "Plan"));
-  const plan = el("ul");
-  d.plan.forEach(p => plan.appendChild(el("li", "", p)));
-  t.appendChild(plan);
+  const block = (title) => { const b = el("div", "tl"); b.appendChild(el("h4", "", title)); t.appendChild(b); return b; };
 
-  t.appendChild(el("p", "", "Tool calls (chosen by the agent)"));
-  const tools = el("ul");
+  const p = block("1. Plan");
+  const pl = el("ul"); d.plan.forEach(x => pl.appendChild(el("li", "", x)));
+
+  if (!d.plan.length) pl.appendChild(el("li", "", "none"));
+  p.appendChild(pl);
+
+  const tb = block("2. Tools chosen by the agent");
+  const tl = el("ul");
   d.tool_calls.forEach(c => {
     const li = el("li");
     li.appendChild(el("code", "", c.tool + "(" + JSON.stringify(c.args) + ")"));
-    li.appendChild(document.createTextNode(" → " + c.n_results + " passages"));
-    tools.appendChild(li);
+    li.appendChild(document.createTextNode("  → " + c.n_results + " passages"));
+    tl.appendChild(li);
   });
-  if (!d.tool_calls.length) tools.appendChild(el("li", "", "none"));
-  t.appendChild(tools);
+  if (!d.tool_calls.length) tl.appendChild(el("li", "", "none"));
+  tb.appendChild(tl);
+  if (d.missing_drugs.length) tb.appendChild(el("div", "claim s-clinically_ambiguous", "Not in corpus: " + d.missing_drugs.join(", ")));
 
-  if (d.missing_drugs.length)
-    t.appendChild(el("p", "", "Not in corpus: " + d.missing_drugs.join(", ")));
-
-  t.appendChild(el("p", "", "Critic" + (d.critic.revised ? " (answer was revised once)" : "")));
+  const cb = block("3. Critic" + (d.critic.revised ? " (answer revised once)" : ""));
+  const count = s => d.critic.claims.filter(c => c.status === s).length;
+  cb.appendChild(el("div", "summary",
+    count("supported") + " supported · " + count("unsupported") + " unsupported · " +
+    count("clinically_ambiguous") + " ambiguous · " + d.critic.numeric_issues.length + " numeric issues"));
   d.critic.claims.forEach(c => {
-    const row = el("div", "claim s-" + c.status, "[" + c.status.replace("_", " ") + "] " + c.claim);
-    if (c.note) row.title = c.note;
-    t.appendChild(row);
+    const r = el("div", "claim s-" + c.status, "[" + c.status.replace("_", " ") + "] " + c.claim);
+    if (c.note) r.title = c.note;
+    cb.appendChild(r);
   });
-  d.critic.numeric_issues.forEach(n => t.appendChild(el("div", "claim s-unsupported", "[numeric] " + n)));
+  d.critic.numeric_issues.forEach(n => cb.appendChild(el("div", "claim s-unsupported", "[numeric] " + n)));
 }
 
 async function ask() {
   const question = $("q").value.trim();
-  if (!question) { $("status").textContent = "Please enter a question."; return; }
+  if (!question) return;
   $("ask").disabled = true;
-  $("status").className = "";
-  $("status").textContent = "Planning, retrieving, reviewing... this can take 20-60 seconds.";
+
+  $("error").hidden = true;
+  $("result").hidden = true;
+  startProgress();
   try {
     const r = await fetch("/ask", {
       method: "POST",
@@ -152,28 +340,14 @@ async function ask() {
     const d = await r.json();
     if (!r.ok) {
       const detail = Array.isArray(d.detail) ? d.detail.map(x => x.msg).join("; ") : d.detail;
-      throw new Error(detail || ("Request failed (" + r.status + ")"));
+      throw new Error(detail || "Request failed (" + r.status + ")");
     }
-    $("result").hidden = false;
-    renderAnswer(d.answer);
-    const v = $("verdict");
-    v.textContent = d.critic.verdict;
-    v.className = "badge " + d.critic.verdict;
-
-    const src = $("sources");
-    src.replaceChildren();
-    if (d.citations.length) {
-      src.appendChild(el("h2", "", "Sources used"));
-      const ul = el("ul");
-      d.citations.forEach(c => ul.appendChild(el("li", "", c.file + " › " + c.section)));
-      src.appendChild(ul);
-    }
-    renderTrace(d);
-    $("disclaimer").textContent = d.disclaimer;
-    $("status").textContent = "";
+    stopProgress();
+    render(d);
   } catch (e) {
-    $("status").className = "error";
-    $("status").textContent = "Error: " + e.message;
+    stopProgress();
+    $("error").textContent = "Something went wrong: " + e.message;
+    $("error").hidden = false;
   } finally {
     $("ask").disabled = false;
   }
@@ -181,6 +355,12 @@ async function ask() {
 
 $("ask").onclick = ask;
 $("q").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) ask(); });
+$("copy").onclick = async () => {
+  try { await navigator.clipboard.writeText(lastAnswer); $("copy").textContent = "Copied ✓"; }
+  catch { $("copy").textContent = "Copy failed"; }
+  setTimeout(() => $("copy").textContent = "Copy answer", 1500);
+};
+
 </script>
 </body>
 </html>
