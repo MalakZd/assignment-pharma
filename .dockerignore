@@ -1,0 +1,10 @@
+.env
+.venv/
+.git/
+.cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+assignment-pharma.pdf
+smoke_test.py
+run_cli.py

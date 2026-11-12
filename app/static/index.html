@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pharma Research Agent</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1c2430; --muted:#667085; --line:#e4e7ec;
+          --accent:#2457d6; --ok:#12805c; --warn:#b54708; --bad:#b42318; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  main { max-width:820px; margin:0 auto; padding:28px 18px 60px; }
+  h1 { margin:0 0 4px; font-size:1.5rem; }
+  .sub { color:var(--muted); margin:0 0 16px; }
+  .banner { background:#fff7e6; border:1px solid #f5d79a; color:#7a4b00;
+            padding:9px 12px; border-radius:8px; font-size:.9rem; margin-bottom:18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+          padding:16px; margin-bottom:16px; }
+  textarea { width:100%; min-height:84px; resize:vertical; padding:10px;
+             border:1px solid var(--line); border-radius:8px; font:inherit; }
+  textarea:focus { outline:2px solid var(--accent); border-color:transparent; }
+  .row { display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+  button.primary { background:var(--accent); color:#fff; border:0; padding:9px 20px;
+                   border-radius:8px; font:inherit; font-weight:600; cursor:pointer; }
+  button.primary:disabled { opacity:.55; cursor:wait; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .chip { background:#eef2ff; color:#27408b; border:1px solid #d6defa; border-radius:999px;
+          padding:5px 12px; font-size:.85rem; cursor:pointer; text-align:left; }
+  .chip:hover { background:#e0e7ff; }
+  #status { color:var(--muted); font-size:.9rem; }
+  #answer { white-space:pre-wrap; }
+  .cite { display:inline-block; background:#eef2ff; color:#27408b; border-radius:6px;
+          padding:0 6px; font-size:.78rem; margin:0 1px; white-space:normal; }
+  .badge { display:inline-block; font-size:.75rem; font-weight:700; padding:2px 9px;
+           border-radius:999px; color:#fff; }
+  .pass { background:var(--ok); } .revised { background:var(--warn); } .flagged { background:var(--bad); }
+  h2 { font-size:1rem; margin:0 0 8px; }
+  ul { margin:6px 0 0; padding-left:20px; }
+  details { margin-top:8px; }
+  summary { cursor:pointer; font-weight:600; }
+  .claim { font-size:.88rem; margin:4px 0; }
+  .s-supported { color:var(--ok); } .s-unsupported { color:var(--bad); }
+  .s-clinically_ambiguous { color:var(--warn); }
+  code { background:#f2f4f7; padding:1px 5px; border-radius:4px; font-size:.82rem; }
+  .disclaimer { color:var(--muted); font-size:.85rem; margin-top:12px;
+                border-top:1px solid var(--line); padding-top:10px; }
+  .error { color:var(--bad); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pharma Research Agent</h1>
+  <p class="sub">Ask compound questions about the FDA label and consumer-monograph corpus.</p>
+  <div class="banner">Technical exercise. Not medical advice.</div>
+
+  <div class="card">
+    <textarea id="q" placeholder="e.g. What are the main contraindications for warfarin?"></textarea>
+    <div class="row">
+      <button class="primary" id="ask">Ask</button>
+      <span id="status"></span>
+    </div>
+    <div class="chips" id="examples"></div>
+  </div>
+
+  <div class="card" id="result" hidden>
+    <h2>Answer <span id="verdict" class="badge"></span></h2>
+    <div id="answer"></div>
+    <div id="sources"></div>
+    <details>
+      <summary>Agent trace</summary>
+      <div id="trace"></div>
+    </details>
+    <div class="disclaimer" id="disclaimer"></div>
+  </div>
+</main>
+
+<script>
+const EXAMPLES = [
+  "What are the main contraindications for warfarin?",
+  "Compare the contraindications of warfarin and apixaban. What conditions are shared and which are unique to each drug?",
+  "A patient currently on warfarin is prescribed sertraline. What is the risk of bleeding and what monitoring is recommended?",
+  "A patient with an eGFR of 25 mL/min is being considered for metformin. Is metformin contraindicated at this level of renal function, and what is the threshold?"
+];
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+};
+
+EXAMPLES.forEach(t => {
+  const c = el("button", "chip", t.length > 70 ? t.slice(0, 67) + "..." : t);
+  c.title = t;
+  c.onclick = () => { $("q").value = t; ask(); };
+  $("examples").appendChild(c);
+});
+
+function renderAnswer(text) {
+  const box = $("answer");
+  box.replaceChildren();
+  text.split(/(\[[^\]]+›[^\]]+\])/).forEach(part => {
+    if (/^\[[^\]]+›[^\]]+\]$/.test(part)) box.appendChild(el("span", "cite", part.slice(1, -1)));
+    else if (part) box.appendChild(document.createTextNode(part));
+  });
+}
+
+function renderTrace(d) {
+  const t = $("trace");
+  t.replaceChildren();
+  t.appendChild(el("p", "", "Plan"));
+  const plan = el("ul");
+  d.plan.forEach(p => plan.appendChild(el("li", "", p)));
+  t.appendChild(plan);
+
+  t.appendChild(el("p", "", "Tool calls (chosen by the agent)"));
+  const tools = el("ul");
+  d.tool_calls.forEach(c => {
+    const li = el("li");
+    li.appendChild(el("code", "", c.tool + "(" + JSON.stringify(c.args) + ")"));
+    li.appendChild(document.createTextNode(" → " + c.n_results + " passages"));
+    tools.appendChild(li);
+  });
+  if (!d.tool_calls.length) tools.appendChild(el("li", "", "none"));
+  t.appendChild(tools);
+
+  if (d.missing_drugs.length)
+    t.appendChild(el("p", "", "Not in corpus: " + d.missing_drugs.join(", ")));
+
+  t.appendChild(el("p", "", "Critic" + (d.critic.revised ? " (answer was revised once)" : "")));
+  d.critic.claims.forEach(c => {
+    const row = el("div", "claim s-" + c.status, "[" + c.status.replace("_", " ") + "] " + c.claim);
+    if (c.note) row.title = c.note;
+    t.appendChild(row);
+  });
+  d.critic.numeric_issues.forEach(n => t.appendChild(el("div", "claim s-unsupported", "[numeric] " + n)));
+}
+
+async function ask() {
+  const question = $("q").value.trim();
+  if (!question) { $("status").textContent = "Please enter a question."; return; }
+  $("ask").disabled = true;
+  $("status").className = "";
+  $("status").textContent = "Planning, retrieving, reviewing... this can take 20-60 seconds.";
+  try {
+    const r = await fetch("/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question })
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      const detail = Array.isArray(d.detail) ? d.detail.map(x => x.msg).join("; ") : d.detail;
+      throw new Error(detail || ("Request failed (" + r.status + ")"));
+    }
+    $("result").hidden = false;
+    renderAnswer(d.answer);
+    const v = $("verdict");
+    v.textContent = d.critic.verdict;
+    v.className = "badge " + d.critic.verdict;
+
+    const src = $("sources");
+    src.replaceChildren();
+    if (d.citations.length) {
+      src.appendChild(el("h2", "", "Sources used"));
+      const ul = el("ul");
+      d.citations.forEach(c => ul.appendChild(el("li", "", c.file + " › " + c.section)));
+      src.appendChild(ul);
+    }
+    renderTrace(d);
+    $("disclaimer").textContent = d.disclaimer;
+    $("status").textContent = "";
+  } catch (e) {
+    $("status").className = "error";
+    $("status").textContent = "Error: " + e.message;
+  } finally {
+    $("ask").disabled = false;
+  }
+}
+
+$("ask").onclick = ask;
+$("q").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) ask(); });
+</script>
+</body>
+</html>

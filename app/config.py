@@ -1,10 +1,9 @@
 import os
+from functools import lru_cache
 from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
-
-from functools import lru_cache
 
 load_dotenv()
 
@@ -12,11 +11,26 @@ ROOT = Path(__file__).resolve().parent.parent
 CORPUS_DIR = ROOT / "corpus"
 CACHE_DIR = ROOT / ".cache"
 
-API_KEY = os.getenv("OPENAI_API_KEY")
+
+def _env(name: str, default: str | None = None) -> str | None:
+    """Read an env var, tolerating stray whitespace and surrounding quotes.
+
+    Docker's --env-file keeps quotes literally, so a value like 'https://x'
+    would otherwise arrive with the quotes included.
+    """
+    value = os.getenv(name)
+    if value is None:
+        return default
+    value = value.strip().strip("'\"").strip()
+    return value or default
+
+
+API_KEY = _env("OPENAI_API_KEY")
 # Accept the typo'd name too, in case a grader's .env has it.
-BASE_URL = os.getenv("OPENAI_BASE_URL") or os.getenv("OPENAI_BASE_UR")
-CHAT_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6-terra")
-EMBED_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+BASE_URL = _env("OPENAI_BASE_URL") or _env("OPENAI_BASE_UR")
+CHAT_MODEL = _env("OPENAI_MODEL", "gpt-5.6-terra")
+EMBED_MODEL = _env("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+
 
 
 @lru_cache(maxsize=1)
