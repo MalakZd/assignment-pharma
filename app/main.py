@@ -44,7 +44,7 @@ def _warm_up() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Build the index in the background so /health answers immediately.
+   
     threading.Thread(target=_warm_up, daemon=True).start()
     yield
 

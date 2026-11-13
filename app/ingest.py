@@ -11,14 +11,14 @@ HEADING_RE = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
 @dataclass
 class Chunk:
     file: str
-    drug: str          # e.g. "warfarin" (or "glossary")
-    source_type: str   # "dailymed" | "medlineplus" | "glossary"
-    section: str       # heading path, e.g. "Warfarin > Contraindications"
+    drug: str          
+    source_type: str   
+    section: str       
     text: str
 
     @property
     def embed_text(self) -> str:
-        # Prefixing context makes retrieval much more accurate.
+      
         return f"{self.drug} ({self.source_type}) - {self.section}\n{self.text}"
 
 

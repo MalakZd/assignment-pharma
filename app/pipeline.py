@@ -26,7 +26,7 @@ def resolve_citations(answer: str, evidence: list[Chunk]) -> tuple[str, list[Cit
         return f"[{c.file} › {c.section}]"
 
     resolved = re.sub(r"\[(E\d+)\]", sub, answer)
-    # Collapse identical markers repeated back to back (several chunks, same section).
+   
     resolved = re.sub(r"(\[[^\]]+\])(?:\s*\1)+", r"\1", resolved)
     return resolved, list(seen.values())
 

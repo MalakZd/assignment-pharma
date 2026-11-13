@@ -7,7 +7,7 @@ from .config import CHAT_MODEL, get_client
 
 def _parse(raw: str, model_cls: type[BaseModel]) -> BaseModel:
     data = json.loads(raw)
-    # Tolerate models that echo the schema and nest the values under "properties".
+   
     if (isinstance(data, dict) and isinstance(data.get("properties"), dict)
             and not set(model_cls.model_fields) & set(data)):
         data = data["properties"]

@@ -22,7 +22,8 @@ Technical exercise, not medical advice.
 5. **Safety in code, not prompts.** The disclaimer is appended by code.
    Questions and retrieved text are treated as data, not instructions.
 6. **No secrets, no hardcoding.** All settings come from environment variables via
-   `app/config.py`; `.env` is git-ignored.
+   `app/config.py`; `.env` is git-ignored. The proxy URL is read from
+   `OPENAI_BASE_UR`, the spelling used in the provided `.env`.
 
 ## Pitfalls found and fixed
 | Problem | Fix |
@@ -30,7 +31,6 @@ Technical exercise, not medical advice.
 | Model returned the JSON schema instead of data | `app/llm.py` unwraps `properties` and retries with the validation error |
 | Free-text citations drifted (`7DRUG` vs `7 DRUG`) | Evidence IDs resolved in code |
 | Critic rejected valid comparisons as "unsupported" | Rubric separates direct support from entailed synthesis |
-
 | Docker `--env-file` keeps quotes, so the base URL became invalid and calls went to localhost | `_env()` strips quotes |
 | Provider content filter rejected a prompt and crashed the API | Caught in `app/pipeline.py`, returns a flagged response |
 | Real key and confidential PDF in the first commit | Repo recreated with `.gitignore` before publishing |
